@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fun Facts Matcher</title>
+    <link rel="stylesheet" href="/public/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>Fun Facts Matcher</h1>
+      <div class="scoreboard">
+        <span id="score">0</span> pts
+      </div>
+    </header>
+
+    <main class="app">
+      <section class="facts-panel">
+        <h2>Fun Facts</h2>
+        <div id="facts" class="facts-list" aria-label="Draggable fun facts"></div>
+      </section>
+
+      <section class="people-panel">
+        <h2>People</h2>
+        <div id="people" class="people-grid" aria-label="Drop facts on people"></div>
+      </section>
+    </main>
+
+    <footer class="controls">
+      <button id="submit" class="primary">Submit</button>
+      <button id="reset" class="secondary">Reset</button>
+      <span id="status" class="status" role="status" aria-live="polite"></span>
+    </footer>
+
+    <script src="/public/app.js"></script>
+  </body>
+  </html>
+
