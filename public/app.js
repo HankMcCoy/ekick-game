@@ -18,7 +18,6 @@ const $facts = document.getElementById('facts');
 const $pets = document.getElementById('pets');
 const $people = document.getElementById('people');
 const $submit = document.getElementById('submit');
-const $reset = document.getElementById('reset');
 const $score = document.getElementById('score');
 const $status = document.getElementById('status');
 
@@ -112,9 +111,9 @@ function render() {
 
   for (const fact of state.facts) {
     const key = factKey(fact);
-    const card = buildFactCard(fact, 'pool');
     const assigned = state.assignedTo.get(key);
-    if (!assigned || state.locked.has(key)) {
+    if (!assigned && !state.locked.has(key)) {
+      const card = buildFactCard(fact);
       $facts.appendChild(card);
     }
   }
@@ -122,9 +121,9 @@ function render() {
   if ($pets) {
     for (const pet of state.pets) {
       const key = petKey(pet);
-      const card = buildPetCard(pet, 'pool');
       const assigned = state.assignedTo.get(key);
-      if (!assigned || state.locked.has(key)) {
+      if (!assigned && !state.locked.has(key)) {
+        const card = buildPetCard(pet);
         $pets.appendChild(card);
       }
     }
@@ -175,9 +174,9 @@ function render() {
     } else {
       for (const entry of assignedItems) {
         if (entry.type === FACT_PREFIX) {
-          drop.appendChild(buildFactCard(entry.item, 'person'));
+          drop.appendChild(buildFactCard(entry.item));
         } else if (entry.type === PET_PREFIX) {
-          drop.appendChild(buildPetCard(entry.item, 'person'));
+          drop.appendChild(buildPetCard(entry.item));
         }
       }
     }
@@ -188,7 +187,7 @@ function render() {
   }
 }
 
-function buildFactCard(fact, context) {
+function buildFactCard(fact) {
   const key = factKey(fact);
   const isLocked = state.locked.has(key);
   const classes = ['fact-card'];
@@ -200,18 +199,11 @@ function buildFactCard(fact, context) {
   card.dataset.itemType = FACT_PREFIX;
   card.textContent = fact.fact || '(No fact)';
   card.setAttribute('draggable', isLocked ? 'false' : 'true');
-  if (isLocked) {
-    const chip = document.createElement('span');
-    chip.className = 'chip ok';
-    chip.textContent = context === 'person' ? 'Correct' : 'Locked';
-    chip.style.marginLeft = '8px';
-    card.appendChild(chip);
-  }
   attachDragHandlers(card);
   return card;
 }
 
-function buildPetCard(pet, context) {
+function buildPetCard(pet) {
   const key = petKey(pet);
   const isLocked = state.locked.has(key);
   const classes = ['pet-card'];
@@ -228,14 +220,6 @@ function buildPetCard(pet, context) {
   img.alt = `${pet.name} — ${pet.owner}'s pet`;
   img.loading = 'lazy';
   card.appendChild(img);
-
-  if (isLocked) {
-    const chip = document.createElement('span');
-    chip.className = 'chip ok';
-    chip.textContent = context === 'person' ? 'Correct' : 'Locked';
-    chip.style.marginLeft = '6px';
-    card.appendChild(chip);
-  }
 
   attachDragHandlers(card);
   return card;
@@ -300,6 +284,28 @@ function attachDropHandlers(container, dropZone) {
     if (!key || state.locked.has(key)) return;
     const personName = getPersonName();
     if (!personName) return;
+
+    const isFactCard = key.startsWith(`${FACT_PREFIX}-`);
+    if (isFactCard) {
+      let existingFactKey = null;
+      for (const fact of state.facts) {
+        const candidateKey = factKey(fact);
+        if (candidateKey === key) continue;
+        if (state.assignedTo.get(candidateKey) === personName) {
+          existingFactKey = candidateKey;
+          break;
+        }
+      }
+      if (existingFactKey) {
+        if (state.locked.has(existingFactKey)) {
+          // Cannot override a locked fact on this person
+          return;
+        }
+        state.assignedTo.delete(existingFactKey);
+        state.incorrect.delete(existingFactKey);
+      }
+    }
+
     // Move assignment to this person
     state.incorrect.delete(key);
     state.assignedTo.set(key, personName);
@@ -383,16 +389,6 @@ function submitRound() {
   }
 }
 
-function resetGame() {
-  state.attempts.clear();
-  state.assignedTo.clear();
-  state.locked.clear();
-  state.incorrect.clear();
-  state.score = 0;
-  setStatus('');
-  render();
-}
-
 async function main() {
   try {
     await loadData();
@@ -405,7 +401,6 @@ async function main() {
 }
 
 $submit.addEventListener('click', submitRound);
-$reset.addEventListener('click', resetGame);
 
 main();
 

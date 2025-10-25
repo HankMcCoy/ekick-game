@@ -9,16 +9,22 @@
   <body>
     <header class="app-header">
       <h1>Know your EKICKer!</h1>
-      <div class="scoreboard">
-        <span id="score">0</span> pts
+      <div class="header-actions">
+        <div class="scoreboard">
+          <span id="score">0</span> pts
+        </div>
+        <span id="status" class="status" role="status" aria-live="polite"></span>
+        <button id="submit" class="primary">Submit</button>
       </div>
     </header>
 
     <main class="app">
       <section class="facts-panel">
         <h2 class="panel-title">Fun Facts</h2>
+        <p class="panel-note">Each person has exactly one fun fact.</p>
         <div id="facts" class="facts-list" aria-label="Draggable fun facts"></div>
         <h2 class="panel-title">Pets/Children</h2>
+        <p class="panel-note">People may have 0, 1, or multiple pets.</p>
         <div id="pets" class="pets-list" aria-label="Draggable pets and children"></div>
       </section>
 
@@ -28,11 +34,7 @@
       </section>
     </main>
 
-    <footer class="controls">
-      <button id="submit" class="primary">Submit</button>
-      <button id="reset" class="secondary">Reset</button>
-      <span id="status" class="status" role="status" aria-live="polite"></span>
-    </footer>
+    <footer class="controls"></footer>
 
     <script src="/public/app.js"></script>
   </body>
