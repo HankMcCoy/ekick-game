@@ -2,11 +2,11 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 9001;
 
 const ROOT = process.cwd();
-const PUBLIC_DIR = path.join(ROOT, 'public');
 const PEOPLE_DIR = path.join(ROOT, 'people');
+const PETS_DIR = path.join(ROOT, 'pets');
 const FACTS_CSV = path.join(ROOT, 'fun-facts.csv');
 
 function sendJson(res, obj) {
@@ -53,22 +53,59 @@ function titleCaseFromFilename(filename) {
     .join(' ');
 }
 
-function loadPeople() {
-  let files = [];
+function readDirSafe(dir) {
   try {
-    files = fs.readdirSync(PEOPLE_DIR);
+    return fs.readdirSync(dir);
   } catch (e) {
-    files = [];
+    return [];
   }
+}
+
+function loadPeople() {
   const allowed = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp']);
-  const people = files
+  const people = readDirSafe(PEOPLE_DIR)
     .filter(f => allowed.has(path.extname(f).toLowerCase()))
+    .sort((a, b) => a.localeCompare(b))
     .map(f => ({
       name: titleCaseFromFilename(f),
       image: '/people/' + f,
       filename: f,
     }));
   return people;
+}
+
+function firstSegment(str) {
+  const idx = str.indexOf('_');
+  if (idx === -1) return str;
+  return str.slice(0, idx);
+}
+
+function remainderSegments(str) {
+  const idx = str.indexOf('_');
+  if (idx === -1) return '';
+  return str.slice(idx + 1);
+}
+
+function loadPets() {
+  const allowed = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp']);
+  const files = readDirSafe(PETS_DIR)
+    .filter(f => allowed.has(path.extname(f).toLowerCase()))
+    .sort((a, b) => a.localeCompare(b));
+
+  return files.map((f, idx) => {
+    const base = f.replace(/\.[^.]+$/, '');
+    const ownerSegment = firstSegment(base);
+    const petSegment = remainderSegments(base);
+    const owner = titleCaseFromFilename(ownerSegment);
+    const petName = petSegment ? titleCaseFromFilename(petSegment) : 'Pet';
+    return {
+      id: idx + 1,
+      owner,
+      name: petName,
+      image: '/pets/' + f,
+      filename: f,
+    };
+  });
 }
 
 function parseCsv(text) {
@@ -160,7 +197,15 @@ const server = http.createServer((req, res) => {
       return send500(res, e);
     }
   }
-  // static files (including /public/* and /people/*)
+  if (url === '/api/pets') {
+    try {
+      const pets = loadPets();
+      return sendJson(res, { pets });
+    } catch (e) {
+      return send500(res, e);
+    }
+  }
+  // static files (including /public/*, /people/*, and /pets/*)
   return serveStatic(req, res);
 });
 

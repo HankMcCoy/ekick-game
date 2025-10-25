@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Fun Facts Matcher</title>
+    <title>Know your EKICKer!</title>
     <link rel="stylesheet" href="/public/styles.css" />
   </head>
   <body>
     <header class="app-header">
-      <h1>Fun Facts Matcher</h1>
+      <h1>Know your EKICKer!</h1>
       <div class="scoreboard">
         <span id="score">0</span> pts
       </div>
@@ -16,13 +16,15 @@
 
     <main class="app">
       <section class="facts-panel">
-        <h2>Fun Facts</h2>
+        <h2 class="panel-title">Fun Facts</h2>
         <div id="facts" class="facts-list" aria-label="Draggable fun facts"></div>
+        <h2 class="panel-title">Pets/Children</h2>
+        <div id="pets" class="pets-list" aria-label="Draggable pets and children"></div>
       </section>
 
       <section class="people-panel">
-        <h2>People</h2>
-        <div id="people" class="people-grid" aria-label="Drop facts on people"></div>
+        <h2 class="panel-title">People</h2>
+        <div id="people" class="people-grid" aria-label="Drop cards on people"></div>
       </section>
     </main>
 
@@ -35,4 +37,3 @@
     <script src="/public/app.js"></script>
   </body>
   </html>
-
