@@ -219,6 +219,7 @@ function buildPetCard(pet) {
   img.src = pet.image;
   img.alt = `${pet.name} — ${pet.owner}'s pet`;
   img.loading = 'lazy';
+  img.draggable = false;
   card.appendChild(img);
 
   attachDragHandlers(card);
