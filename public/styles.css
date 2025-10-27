@@ -50,6 +50,7 @@ body {
   border-radius: 12px;
   padding: 12px 12px 4px;
   min-height: 300px;
+  min-width: 0;
 }
 
 .panel-title { margin: 6px 6px 12px; font-size: 15px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
@@ -200,9 +201,9 @@ button.primary { background: var(--accent); color: #06120b; border-color: #16a34
 
 @media (max-width: 1024px) {
   .app {
-    grid-template-columns: 1fr;
-    gap: 18px;
-    padding: 14px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 14px;
+    padding: 12px;
   }
 
   .facts-panel,
@@ -252,18 +253,18 @@ button.primary { background: var(--accent); color: #06120b; border-color: #16a34
   }
 
   .facts-list {
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .pets-list {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .people-grid {
-    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .person {
@@ -287,7 +288,7 @@ button.primary { background: var(--accent); color: #06120b; border-color: #16a34
 
   .app {
     padding: 10px 8px 14px;
-    gap: 14px;
+    gap: 12px;
   }
 
   .facts-panel,
@@ -297,16 +298,16 @@ button.primary { background: var(--accent); color: #06120b; border-color: #16a34
 
   .facts-list,
   .pets-list {
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .people-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
 
   .person .name {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   button {
