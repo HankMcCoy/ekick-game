@@ -74,6 +74,7 @@ body {
   scrollbar-gutter: stable;
   height: 100%;
   max-height: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .people-panel {
@@ -87,6 +88,7 @@ body {
   display: flex;
   flex-direction: column;
   scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
 }
 
 .panel-title {
@@ -374,7 +376,8 @@ button.primary {
     padding-right: 0;
     height: auto;
     max-height: none;
-    overflow-y: visible;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .panel-note {
