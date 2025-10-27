@@ -20,12 +20,37 @@
 
     <main class="app">
       <section class="facts-panel">
-        <h2 class="panel-title">Fun Facts</h2>
-        <p class="panel-note">Each person has exactly one fun fact.</p>
-        <div id="facts" class="facts-list" aria-label="Draggable fun facts"></div>
-        <h2 class="panel-title">Pets/Children</h2>
-        <p class="panel-note">People may have 0, 1, or multiple pets.</p>
-        <div id="pets" class="pets-list" aria-label="Draggable pets and children"></div>
+        <div class="panel-section open">
+          <button
+            type="button"
+            class="panel-toggle"
+            data-target="facts-content"
+            aria-expanded="true"
+            aria-controls="facts-content"
+          >
+            Fun Facts
+          </button>
+          <div id="facts-content" class="panel-content">
+            <p class="panel-note">Each person has exactly one fun fact.</p>
+            <div id="facts" class="facts-list" aria-label="Draggable fun facts"></div>
+          </div>
+        </div>
+
+        <div class="panel-section open">
+          <button
+            type="button"
+            class="panel-toggle"
+            data-target="pets-content"
+            aria-expanded="true"
+            aria-controls="pets-content"
+          >
+            Pets/Children
+          </button>
+          <div id="pets-content" class="panel-content">
+            <p class="panel-note">People may have 0, 1, or multiple pets.</p>
+            <div id="pets" class="pets-list" aria-label="Draggable pets and children"></div>
+          </div>
+        </div>
       </section>
 
       <section class="people-panel">

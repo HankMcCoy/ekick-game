@@ -403,7 +403,38 @@ async function main() {
 
 $submit.addEventListener('click', submitRound);
 
+setupCollapsibles();
 main();
+
+function setupCollapsibles() {
+  const toggles = document.querySelectorAll('.panel-toggle');
+  toggles.forEach((btn) => {
+    const targetId = btn.getAttribute('data-target');
+    if (!targetId) return;
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    const section = btn.closest('.panel-section');
+    const startExpanded = btn.getAttribute('aria-expanded') !== 'false';
+    if (!startExpanded) {
+      target.setAttribute('hidden', '');
+      if (section) section.classList.remove('open');
+    } else if (section) {
+      section.classList.add('open');
+    }
+    btn.addEventListener('click', () => {
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      const nextState = !expanded;
+      btn.setAttribute('aria-expanded', String(nextState));
+      if (nextState) {
+        target.removeAttribute('hidden');
+        if (section) section.classList.add('open');
+      } else {
+        target.setAttribute('hidden', '');
+        if (section) section.classList.remove('open');
+      }
+    });
+  });
+}
 
 function setupPoolDrop(container, prefix) {
   if (!container) return;
