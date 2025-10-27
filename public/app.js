@@ -12,6 +12,7 @@ const state = {
   locked: new Set(), // itemKeys that are correct and locked
   incorrect: new Set(), // itemKeys currently marked incorrect
   score: 0,
+  petsUnlocked: false,
 };
 
 const $facts = document.getElementById('facts');
@@ -20,6 +21,9 @@ const $people = document.getElementById('people');
 const $submit = document.getElementById('submit');
 const $score = document.getElementById('score');
 const $status = document.getElementById('status');
+
+const collapsibleControls = new Map();
+let previousPetsUnlocked = state.petsUnlocked;
 
 function setStatus(text) {
   $status.textContent = text || '';
@@ -118,7 +122,7 @@ function render() {
     }
   }
 
-  if ($pets) {
+  if ($pets && state.petsUnlocked) {
     for (const pet of state.pets) {
       const key = petKey(pet);
       const assigned = state.assignedTo.get(key);
@@ -185,6 +189,8 @@ function render() {
     $p.appendChild(drop);
     $people.appendChild($p);
   }
+
+  updatePetsPanelLockState();
 }
 
 function buildFactCard(fact) {
@@ -213,7 +219,8 @@ function buildPetCard(pet) {
   card.className = classes.join(' ');
   card.dataset.itemId = key;
   card.dataset.itemType = PET_PREFIX;
-  card.setAttribute('draggable', isLocked ? 'false' : 'true');
+  const canDrag = !isLocked && state.petsUnlocked;
+  card.setAttribute('draggable', canDrag ? 'true' : 'false');
 
   const img = document.createElement('img');
   img.src = pet.image;
@@ -229,7 +236,8 @@ function buildPetCard(pet) {
 function attachDragHandlers(el) {
   el.addEventListener('dragstart', (e) => {
     const key = el.dataset.itemId;
-    if (!key || state.locked.has(key)) {
+    const type = el.dataset.itemType;
+    if (!key || state.locked.has(key) || (type === PET_PREFIX && !state.petsUnlocked)) {
       e.preventDefault();
       return;
     }
@@ -287,6 +295,10 @@ function attachDropHandlers(container, dropZone) {
     if (!personName) return;
 
     const isFactCard = key.startsWith(`${FACT_PREFIX}-`);
+    const isPetCard = key.startsWith(`${PET_PREFIX}-`);
+    if (isPetCard && !state.petsUnlocked) {
+      return;
+    }
     if (isFactCard) {
       let existingFactKey = null;
       for (const fact of state.facts) {
@@ -337,15 +349,18 @@ function submitRound() {
       answer: f.name,
       type: FACT_PREFIX,
     })),
-    ...state.pets.map(p => ({
-      key: petKey(p),
-      answer: p.owner,
-      type: PET_PREFIX,
-    })),
+    ...(state.petsUnlocked
+      ? state.pets.map(p => ({
+          key: petKey(p),
+          answer: p.owner,
+          type: PET_PREFIX,
+        }))
+      : []),
   ];
 
   for (const item of allItems) {
     if (state.locked.has(item.key)) continue;
+    if (item.type === PET_PREFIX && !state.petsUnlocked) continue;
     const assignedPerson = state.assignedTo.get(item.key);
     if (!assignedPerson) continue; // not included this round
 
@@ -367,14 +382,29 @@ function submitRound() {
     }
   }
 
+  const totalFactCount = state.facts.length;
+  const lockedFactCount = state.facts.reduce((count, fact) => (
+    state.locked.has(factKey(fact)) ? count + 1 : count
+  ), 0);
+  const unlockedThisRound = !state.petsUnlocked && totalFactCount > 0 && lockedFactCount === totalFactCount;
+  if (unlockedThisRound) {
+    state.petsUnlocked = true;
+  }
+
   render();
 
-  const totalItems = state.facts.length + state.pets.length;
-  const totalLocked = Array.from(state.locked).filter(key => {
-    return typeof key === 'string' && (
-      key.startsWith(`${FACT_PREFIX}-`) || key.startsWith(`${PET_PREFIX}-`)
-    );
-  }).length;
+  if (unlockedThisRound) {
+    setStatus('Congrats! Hard mode unlocked!');
+    return;
+  }
+
+  const totalLockedPets = state.petsUnlocked
+    ? state.pets.reduce((count, pet) => (
+        state.locked.has(petKey(pet)) ? count + 1 : count
+      ), 0)
+    : 0;
+  const totalLocked = lockedFactCount + totalLockedPets;
+  const totalItems = totalFactCount + (state.petsUnlocked ? state.pets.length : 0);
 
   if (results.length === 0) {
     setStatus('Nothing to check. Drag cards onto people.');
@@ -394,7 +424,7 @@ async function main() {
   try {
     await loadData();
     render();
-    setStatus('Drag fun facts and pets onto people, then press Submit.');
+    setStatus('Match the fun facts to unlock pets, then press Submit.');
   } catch (e) {
     console.error(e);
     setStatus('Failed to load data. Check server.');
@@ -406,6 +436,20 @@ $submit.addEventListener('click', submitRound);
 setupCollapsibles();
 main();
 
+function setCollapsibleExpanded(targetId, expanded) {
+  const entry = collapsibleControls.get(targetId);
+  if (!entry) return;
+  const { button, target, section } = entry;
+  button.setAttribute('aria-expanded', String(expanded));
+  if (expanded) {
+    target.removeAttribute('hidden');
+    if (section) section.classList.add('open');
+  } else {
+    target.setAttribute('hidden', '');
+    if (section) section.classList.remove('open');
+  }
+}
+
 function setupCollapsibles() {
   const toggles = document.querySelectorAll('.panel-toggle');
   toggles.forEach((btn) => {
@@ -414,26 +458,40 @@ function setupCollapsibles() {
     const target = document.getElementById(targetId);
     if (!target) return;
     const section = btn.closest('.panel-section');
+    collapsibleControls.set(targetId, { button: btn, target, section });
     const startExpanded = btn.getAttribute('aria-expanded') !== 'false';
-    if (!startExpanded) {
-      target.setAttribute('hidden', '');
-      if (section) section.classList.remove('open');
-    } else if (section) {
-      section.classList.add('open');
-    }
+    setCollapsibleExpanded(targetId, startExpanded);
     btn.addEventListener('click', () => {
-      const expanded = btn.getAttribute('aria-expanded') === 'true';
-      const nextState = !expanded;
-      btn.setAttribute('aria-expanded', String(nextState));
-      if (nextState) {
-        target.removeAttribute('hidden');
-        if (section) section.classList.add('open');
-      } else {
-        target.setAttribute('hidden', '');
-        if (section) section.classList.remove('open');
+      if (btn.dataset.locked === 'true') {
+        return;
       }
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      setCollapsibleExpanded(targetId, !expanded);
     });
   });
+  updatePetsPanelLockState();
+}
+
+function updatePetsPanelLockState() {
+  const entry = collapsibleControls.get('pets-content');
+  if (!entry) return;
+  const { button, section } = entry;
+  const locked = !state.petsUnlocked;
+  button.classList.toggle('locked', locked);
+  button.dataset.locked = locked ? 'true' : 'false';
+  if (section) {
+    section.classList.toggle('locked', locked);
+  }
+  if (locked) {
+    button.setAttribute('title', 'Unlocks once you finish all Fun Facts');
+    setCollapsibleExpanded('pets-content', false);
+  } else {
+    button.removeAttribute('title');
+    if (!previousPetsUnlocked) {
+      setCollapsibleExpanded('pets-content', true);
+    }
+  }
+  previousPetsUnlocked = state.petsUnlocked;
 }
 
 function setupPoolDrop(container, prefix) {
@@ -447,6 +505,7 @@ function setupPoolDrop(container, prefix) {
     const key = e.dataTransfer.getData('text/item-id');
     if (!key || !key.startsWith(`${prefix}-`)) return;
     if (state.locked.has(key)) return;
+    if (prefix === PET_PREFIX && !state.petsUnlocked) return;
     state.incorrect.delete(key);
     state.assignedTo.delete(key);
     setStatus('');

@@ -77,6 +77,9 @@ body {
   background: var(--panel);
   overflow: hidden;
 }
+.panel-section.locked {
+  opacity: 0.9;
+}
 .panel-toggle {
   width: 100%;
   background: none;
@@ -93,6 +96,30 @@ body {
   padding: 12px;
   cursor: pointer;
   border-radius: 0;
+}
+.panel-toggle.locked {
+  cursor: not-allowed;
+  color: var(--muted);
+}
+.panel-toggle.locked:hover {
+  color: var(--muted);
+}
+.panel-title-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.panel-label {
+  display: inline-block;
+}
+.panel-toggle .lock-icon {
+  display: none;
+  font-size: 16px;
+  line-height: 1;
+  color: var(--muted);
+}
+.panel-toggle.locked .lock-icon {
+  display: inline-flex;
 }
 .panel-toggle:hover { color: var(--text); }
 .panel-toggle:focus-visible {

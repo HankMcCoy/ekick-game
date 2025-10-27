@@ -28,7 +28,9 @@
             aria-expanded="true"
             aria-controls="facts-content"
           >
-            Fun Facts
+            <span class="panel-title-text">
+              <span class="panel-label">Fun Facts</span>
+            </span>
           </button>
           <div id="facts-content" class="panel-content">
             <p class="panel-note">Each person has exactly one fun fact.</p>
@@ -36,17 +38,23 @@
           </div>
         </div>
 
-        <div class="panel-section open">
+        <div class="panel-section locked" id="pets-section">
           <button
             type="button"
-            class="panel-toggle"
+            class="panel-toggle locked"
             data-target="pets-content"
-            aria-expanded="true"
+            aria-expanded="false"
             aria-controls="pets-content"
+            data-locked="true"
+            id="pets-toggle"
+            title="Unlocks once you finish all Fun Facts"
           >
-            Pets/Children
+            <span class="panel-title-text">
+              <span class="panel-label">Pets/Children</span>
+              <span class="lock-icon" aria-hidden="true">&#128274;</span>
+            </span>
           </button>
-          <div id="pets-content" class="panel-content">
+          <div id="pets-content" class="panel-content" hidden>
             <p class="panel-note">People may have 0, 1, or multiple pets.</p>
             <div id="pets" class="pets-list" aria-label="Draggable pets and children"></div>
           </div>
